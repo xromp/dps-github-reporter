@@ -2,19 +2,87 @@
  * @fileoverview Description of this file.
  */
 (function(){
-  let commentEl;
+  let commentEl, addNoteEl, commentContainerEl, needReproEl;
+
+  const repos = [
+    {type:'js', key: 'firebase-js-sdk'},
+    {type:'android', key: 'firebase-android-sdk'},
+    {type:'ios', key: 'firebase-ios-sdk'},
+  ];
+
+  chrome.runtime.onMessage.addListener(gotMessage);
 
   (async function init() {
     await appendForm();
     commentEl = getRoot().querySelector('#comment-text');
-    /* commentEl.addEventListener('change', onchange);
-    commentEl.addEventListener('blur', onchange); */
+    addNoteEl = getRoot().querySelector('#add-note');
+    commentContainerEl = getRoot().querySelector('#comment-container');
+    needReproEl = getRoot().querySelector('#needed-repro');
+    
+    addNoteEl.addEventListener('click', addNote);
+    needReproEl.addEventListener('change', saveNeedRepro);
+
+    getEntry();
+    
+    Array.from(document.querySelectorAll(['[data-hotkey]'])).forEach(e=>e.removeAttribute('data-hotkey'))
   })();
 
-  function onchange(e) {
-    commentEl.focus();
+  function gotMessage(message, sender, sendResponse) {
+      console.log({message});
   }
 
+
+  function saveNeedRepro(e) {
+    const option = {
+      ...getParam(),
+      needRepro: needReproEl.checked,
+    }
+    chrome.runtime.sendMessage({code: "UPDATE_NEED_REPRO", option}, (response) => {});
+  }
+
+  function addNote(e) {
+    if (!commentEl.value) return;
+
+    const option = {
+      ...getParam(),
+      message: commentEl.value,
+      isNeedReproModified: needReproEl.getAttribute('isNeedReproModified'),
+    }
+    chrome.runtime.sendMessage({code: "ADD_NOTE", option}, (response) => {
+      getEntry();
+      commentEl.value='';
+    });
+  }
+
+  function getEntry() {
+    const option = {... getParam()};
+    commentContainerEl.innerHTML = '';
+    chrome.runtime.sendMessage({code: "GET_ENTRY", option}, (response) => {
+      const result = response.result;
+      result.data.forEach(entry => {
+        commentContainerEl.innerHTML +=`
+        
+        <li class="comment user-comment">
+          <p>${entry.message}</p>
+          <div class="info">
+            <span>1 hour ago</span>
+        </div>
+        </li>
+      `;
+      });
+      if (result.status.hasOwnProperty('isModified')) {
+        needReproEl.checked = result.status ? result.status.needRepro : false;
+        if (result.status.isModified) needReproEl.setAttribute('isNeedReproModified', true);needReproEl.checked = result.status ? result.status.needRepro : false;
+      }
+    });
+  }
+
+  function getParam() {
+    const url = window.location.href.split('/');
+    const type = repos.find(element => element.key === url[4])['type'];
+    return {type, issueId:url[6]}
+  }
+  
   function sendRequest({url, option}) {
     return new Promise(resolve => {
       fetch(url, option)
@@ -25,7 +93,6 @@
       });
     });
   };
-
 
   async function appendForm() {
     const data = {
@@ -72,11 +139,5 @@
 
   function getRoot() {
     return document.getElementById('reporter-parent').shadowRoot;
-  }
-
-  Array.from(document.querySelectorAll(['[data-hotkey]'])).forEach(e=>e.removeAttribute('data-hotkey'))
-  chrome.runtime.onMessage.addListener(gotMessage);
-  function gotMessage(message, sender, sendResponse) {
-      console.log(message.txt);
   }
 }());

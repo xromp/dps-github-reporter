@@ -1,21 +1,33 @@
-<ul class="comment-section">
-  <li class="comment user-comment">
-    <p>Suspendisse gravida sem?</p>
-  </li>
-  <li class="comment user-comment">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse gravida sem sit amet molestie portitor.</p>
-  </li>
 
-  <li class="comment author-comment">
-    <div class="info">
-      <span>1 hour ago</span>
-    </div>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisee gravida sem sit amet molestie porttitor.</p>
-  </li>
+<script src="https://www.gstatic.com/firebasejs/7.7.0/firebase.js"></script>
+
+<ul class="comment-section">
+  <div id="comment-container">
+    <li class="comment user-comment">
+      <p>Suspendisse gravida sem?</p>
+    </li>
+    <li class="comment user-comment">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse gravida sem sit amet molestie portitor.</p>
+    </li>
+
+    <li class="comment author-comment">
+      <div class="info">
+        <span>1 hour ago</span>
+      </div>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisee gravida sem sit amet molestie porttitor.</p>
+    </li>
+</div>
   <li class="write-new">
+      <div class="editor-header">
+        <span>Need Repro</span>
+        <div class="onoffswitch">
+          <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="needed-repro">
+          <label class="onoffswitch-label" for="needed-repro"></label>
+        </div>
+      </div>
       <textarea id="comment-text" placeholder="Write your comment here"></textarea>
       <div>
-        <button type="submit">Submit</button>
+        <button id="add-note">+ Note</button>
       </div>
   </li>
 </ul> 
